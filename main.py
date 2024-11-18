@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, Request, Depends
+from fastapi import FastAPI, Form, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, Column, String, Date, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from passlib.hash import bcrypt
+import time
 
 # FastAPI app setup
 app = FastAPI()
@@ -39,6 +40,28 @@ class Flight(Base):
     departure_code = Column(String, ForeignKey("airport.code"))
     destination_code = Column(String, ForeignKey("airport.code"))
     flight_date = Column(Date)
+
+class Passenger(Base):
+    __tablename__ = "passenger"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    national_id = Column(String, unique=True, index=True)
+    age = Column(Integer)
+    gender = Column(String)
+
+class Order(Base):
+    __tablename__ = "order"
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String, unique=True)
+    price = Column(Integer)
+
+class Ticket(Base):
+    __tablename__ = "ticket"
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_number = Column(String, unique=True)
+    passenger_id = Column(Integer, ForeignKey("passenger.id"))
+    flight_id = Column(Integer, ForeignKey("flight.id"))
+    order_id = Column(Integer, ForeignKey("order.id"))
 
 Base.metadata.create_all(bind=engine)
 
@@ -91,7 +114,7 @@ def signup(
 @app.get("/menu", response_class=HTMLResponse)
 def show_menu(request: Request, db: Session = Depends(get_db)):
     airports = db.query(Airport).all()
-    return templates.TemplateResponse("menu.html", {"request": request, "airports": airports})
+    return templates.TemplateResponse("menu.html", {"request": request, "airports": airports, "flights": None})
 
 @app.post("/search_flights", response_class=HTMLResponse)
 def search_flights(
@@ -99,21 +122,63 @@ def search_flights(
     departure: str = Form(...),
     destination: str = Form(...),
     flight_date: str = Form(...),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db)
 ):
     flights = db.query(Flight).filter(
         Flight.departure_code == departure,
         Flight.destination_code == destination,
-        Flight.flight_date == flight_date,
+        Flight.flight_date == flight_date
     ).all()
+    airports = db.query(Airport).all()
+    return templates.TemplateResponse("menu.html", {"request": request, "airports": airports, "flights": flights})
+
+@app.get("/buy_ticket/{flight_id}", response_class=HTMLResponse)
+
+def buy_ticket(flight_id: int, request: Request, db: Session = Depends(get_db)):
+    print("Flight ID received:", flight_id)
+    flight = db.query(Flight).filter(Flight.id == flight_id).first()
+    print("Flight found:", flight)
+
+    flight = db.query(Flight).filter(Flight.id == flight_id).first()
+    if not flight:
+        raise HTTPException(status_code=404, detail="Flight not found")
+    
+    passengers = db.query(Passenger).all()
     return templates.TemplateResponse(
-        "menu.html",
-        {
-            "request": request,
-            "flights": flights,
-            "departure": departure,
-            "destination": destination,
-            "flight_date": flight_date,
-            "airports": db.query(Airport).all(),
-        },
+        "buy_ticket.html",
+        {"request": request, "flight": flight, "passengers": passengers},
     )
+@app.post("/add_passenger", response_class=HTMLResponse)
+def add_passenger(
+    request: Request,
+    name: str = Form(...),
+    national_id: str = Form(...),
+    age: int = Form(...),
+    gender: str = Form(...),
+    departure_code: str = Form(...),
+    destination_code: str = Form(...),
+    flight_date: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    # Add the new passenger to the database
+    new_passenger = Passenger(name=name, national_id=national_id, age=age, gender=gender)
+    db.add(new_passenger)
+    db.commit()
+
+    # Redirect back to the /buy_ticket page for the same flight
+    return RedirectResponse(
+        url=f"/buy_ticket/{request.path_params.get('flight_id', 1)}", status_code=302
+    )
+
+# Checkout route
+@app.post("/checkout", response_class=HTMLResponse)
+def checkout(
+    request: Request,
+    selected_passengers: list[int] = Form(...),
+    db: Session = Depends(get_db)
+):
+    # Process the selected passengers and handle ticket/order creation
+    # Your checkout logic here
+
+    # Redirect to the checkout page
+    return RedirectResponse(url="/checkout_page", status_code=302)

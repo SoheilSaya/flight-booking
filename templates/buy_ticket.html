@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Passenger and Ticket Management</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Passenger and Ticket Management</h1>
+    </header>
+    <main>
+      <!-- Display selected flight details -->
+      <section>
+        <h2>Selected Flight</h2>
+        <p>Departure: {{ flight.departure_code }}</p>
+        <p>Destination: {{ flight.destination_code }}</p>
+        <p>Date: {{ flight.flight_date }}</p>
+      </section>
+
+      <!-- Passenger list with checkboxes -->
+      <section>
+        <h2>Select Existing Passengers</h2>
+        <form method="post" action="/checkout">
+          {% for passenger in passengers %}
+          <div>
+            <input
+              type="checkbox"
+              id="passenger_{{ passenger.id }}"
+              name="selected_passengers"
+              value="{{ passenger.id }}"
+            />
+            <label for="passenger_{{ passenger.id }}">
+              {{ passenger.name }} (National ID: {{ passenger.national_id }},
+              Age: {{ passenger.age }}, Gender: {{ passenger.gender }})
+            </label>
+          </div>
+          {% endfor %}
+          <button type="submit">Checkout</button>
+        </form>
+      </section>
+
+      <!-- Form to add a new passenger -->
+      <section>
+        <h2>Add a Passenger</h2>
+        <form method="post" action="/add_passenger">
+          <input
+            type="hidden"
+            name="departure_code"
+            value="{{ flight.departure_code }}"
+          />
+          <input
+            type="hidden"
+            name="destination_code"
+            value="{{ flight.destination_code }}"
+          />
+          <input
+            type="hidden"
+            name="flight_date"
+            value="{{ flight.flight_date }}"
+          />
+
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" required />
+
+          <label for="national_id">National ID:</label>
+          <input type="text" id="national_id" name="national_id" required />
+
+          <label for="age">Age:</label>
+          <input type="number" id="age" name="age" required min="0" />
+
+          <label for="gender">Gender:</label>
+          <select id="gender" name="gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <button type="submit">Add Passenger</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

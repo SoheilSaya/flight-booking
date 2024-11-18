@@ -5,6 +5,8 @@
     <title>Flight Booking</title>
   </head>
   <body>
+    <h1>Flight Booking System</h1>
+
     <h2>Search for Flights</h2>
     <form method="post" action="/search_flights">
       <label for="departure">Departure Airport:</label>
@@ -37,7 +39,11 @@
     <ul>
       {% for flight in flights %}
       <li>
-        Flight from {{ departure }} to {{ destination }} on {{ flight_date }}
+        Flight from {{ flight.departure_code }} to {{ flight.destination_code }}
+        on {{ flight.flight_date }}
+        <form method="get" action="/buy_ticket/{{ flight.id }}">
+          <button type="submit">Buy Ticket</button>
+        </form>
       </li>
       {% endfor %}
     </ul>
