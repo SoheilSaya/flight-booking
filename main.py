@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from passlib.hash import bcrypt
 import time
 import random
+
 # FastAPI app setup
 app = FastAPI()
 
@@ -219,3 +220,4 @@ def checkout_page(
         "checkout.html",
         {"request": request, "order_code": order_code, "total_price": total_price}
     )
+
