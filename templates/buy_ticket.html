@@ -3,16 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Passenger and Ticket Management</title>
     <link rel="stylesheet" href="/static/styles.css" />
+    <title>Passenger and Ticket Management</title>
   </head>
-  <body>
-    <header>
+  <body class="buy-ticket-body">
+    <div class="buy-ticket-container">
       <h1>Passenger and Ticket Management</h1>
-    </header>
-    <main>
+
       <!-- Display selected flight details -->
-      <section>
+      <section class="flight-details">
         <h2>Selected Flight</h2>
         <p>Departure: {{ flight.departure_code }}</p>
         <p>Destination: {{ flight.destination_code }}</p>
@@ -20,35 +19,35 @@
       </section>
 
       <!-- Passenger list with checkboxes -->
-      <section>
+      <section class="select-passengers">
         <h2>Select Existing Passengers</h2>
-        <form method="post" action="/checkout_page">
+        <form method="post" action="/checkout_page" class="passenger-form">
           <input type="hidden" name="flight_id" value="{{ flight.id }}" />
 
-          <h2>Select Passengers</h2>
           {% for passenger in passengers %}
-          <div>
+          <div class="input-wrapper">
             <input
               type="checkbox"
               id="passenger_{{ passenger.id }}"
               name="passenger_ids"
               value="{{ passenger.id }}"
+              class="input-checkbox"
             />
-            <label for="passenger_{{ passenger.id }}">
+            <label for="passenger_{{ passenger.id }}" class="passenger-label">
               {{ passenger.name }} (Age: {{ passenger.age }}, Gender: {{
               passenger.gender }})
             </label>
           </div>
           {% endfor %}
 
-          <button type="submit">Checkout</button>
+          <button type="submit" class="btn-checkout">Checkout</button>
         </form>
       </section>
 
       <!-- Form to add a new passenger -->
-      <section>
+      <section class="add-passenger">
         <h2>Add a Passenger</h2>
-        <form method="post" action="/add_passenger">
+        <form method="post" action="/add_passenger" class="add-passenger-form">
           <input
             type="hidden"
             name="departure_code"
@@ -65,25 +64,53 @@
             value="{{ flight.flight_date }}"
           />
 
-          <label for="name">Name:</label>
-          <input type="text" id="name" name="name" required />
+          <div class="input-wrapper">
+            <label for="name">Name:</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              required
+              class="input-field"
+            />
+          </div>
 
-          <label for="national_id">National ID:</label>
-          <input type="text" id="national_id" name="national_id" required />
+          <div class="input-wrapper">
+            <label for="national_id">National ID:</label>
+            <input
+              type="text"
+              id="national_id"
+              name="national_id"
+              required
+              class="input-field"
+            />
+          </div>
 
-          <label for="age">Age:</label>
-          <input type="number" id="age" name="age" required min="0" />
+          <div class="input-wrapper">
+            <label for="age">Age:</label>
+            <input
+              type="number"
+              id="age"
+              name="age"
+              required
+              min="0"
+              class="input-field"
+            />
+          </div>
 
-          <label for="gender">Gender:</label>
-          <select id="gender" name="gender" required>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
+          <div class="input-wrapper">
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender" required class="input-field">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
 
-          <button type="submit">Add Passenger</button>
+          <button type="submit" class="btn-add-passenger">Add Passenger</button>
         </form>
       </section>
-    </main>
+    </div>
+    <script src="/static/scripts.js"></script>
   </body>
 </html>

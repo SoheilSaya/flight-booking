@@ -6,17 +6,19 @@
     <title>Checkout Success</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
-  <body>
-    <header>
-      <h1>Checkout Successful</h1>
-    </header>
-    <main>
-      <section>
-        <p>Order Code: <strong>{{ order_code }}</strong></p>
-        <p>Total Price: <strong>${{ total_price }}</strong></p>
-        <p>Your tickets have been successfully booked!</p>
-      </section>
-      <a href="/menu" class="button">Back to Menu</a>
-    </main>
+  <body class="menu-body">
+    <div class="menu-container">
+      <header>
+        <h1>Checkout Successful</h1>
+      </header>
+      <main>
+        <section>
+          <p>Order Code: <strong>{{ order_code }}</strong></p>
+          <p>Total Price: <strong>${{ total_price }}</strong></p>
+          <p>Your tickets have been successfully booked!</p>
+        </section>
+        <a href="/menu" class="btn-checkout">Back to Menu</a>
+      </main>
+    </div>
   </body>
 </html>

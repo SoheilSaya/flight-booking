@@ -1,57 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/static/styles.css" />
     <title>Flight Booking</title>
   </head>
-  <body>
-    <h1>Flight Booking System</h1>
+  <body class="menu-body">
+    <div class="menu-container">
+      <h1>Flight Booking System</h1>
+      <h2>Search for Flights</h2>
+      <form method="post" action="/search_flights" class="search-form">
+        <div class="input-wrapper">
+          <label for="departure">Departure Airport:</label>
+          <select name="departure" id="departure" required class="input-field">
+            {% for airport in airports %}
+            <option value="{{ airport.code }}">
+              {{ airport.name }} ({{ airport.code }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
 
-    <h2>Search for Flights</h2>
-    <form method="post" action="/search_flights">
-      <label for="departure">Departure Airport:</label>
-      <select name="departure" id="departure" required>
-        {% for airport in airports %}
-        <option value="{{ airport.code }}">
-          {{ airport.name }} ({{ airport.code }})
-        </option>
+        <div class="input-wrapper">
+          <label for="destination">Destination Airport:</label>
+          <select
+            name="destination"
+            id="destination"
+            required
+            class="input-field"
+          >
+            {% for airport in airports %}
+            <option value="{{ airport.code }}">
+              {{ airport.name }} ({{ airport.code }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="input-wrapper">
+          <label for="flight_date">Date:</label>
+          <input
+            type="date"
+            name="flight_date"
+            id="flight_date"
+            required
+            class="input-field"
+          />
+        </div>
+
+        <button type="submit" class="btn-search">Search Flights</button>
+      </form>
+
+      {% if flights is not none %}
+      <h3>Available Flights</h3>
+      {% if flights %}
+      <ul class="flights-list">
+        {% for flight in flights %}
+        <li class="flight-item">
+          <p>
+            Flight from {{ flight.departure_code }} to {{
+            flight.destination_code }} on {{ flight.flight_date }}
+          </p>
+          <form method="get" action="/buy_ticket/{{ flight.id }}">
+            <button type="submit" class="btn-buy">Buy Ticket</button>
+          </form>
+        </li>
         {% endfor %}
-      </select>
-
-      <label for="destination">Destination Airport:</label>
-      <select name="destination" id="destination" required>
-        {% for airport in airports %}
-        <option value="{{ airport.code }}">
-          {{ airport.name }} ({{ airport.code }})
-        </option>
-        {% endfor %}
-      </select>
-
-      <label for="flight_date">Date:</label>
-      <input type="date" name="flight_date" id="flight_date" required />
-
-      <button type="submit">Search Flights</button>
-    </form>
-
-    {% if flights is not none %}
-    <h3>Available Flights</h3>
-    {% if flights %}
-    <ul>
-      {% for flight in flights %}
-      <li>
-        Flight from {{ flight.departure_code }} to {{ flight.destination_code }}
-        on {{ flight.flight_date }}
-        <form method="get" action="/buy_ticket/{{ flight.id }}">
-          <button type="submit">Buy Ticket</button>
-        </form>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p>
-      No flights available on {{ flight_date }} from {{ departure }} to {{
-      destination }}.
-    </p>
-    {% endif %} {% endif %}
+      </ul>
+      {% else %}
+      <p class="no-flights">
+        No flights available on {{ flight_date }} from {{ departure }} to {{
+        destination }}.
+      </p>
+      {% endif %} {% endif %}
+    </div>
+    <script src="/static/scripts.js"></script>
   </body>
 </html>

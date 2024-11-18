@@ -1,39 +1,207 @@
+/* General Reset and Basic Styles */
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
+}
+
+
+/* Background and Layout */
+
+.menu-body,
+.buy-ticket-body,
+.login-body {
+    background: linear-gradient(135deg, #6b9aff, #66ffc1);
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #f4f4f9;
+    min-height: 100vh;
+    margin: 0;
 }
 
-form {
+
+/* Containers */
+
+.menu-container,
+.buy-ticket-container,
+.login-container {
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 1s ease;
+    width: 90%;
+    max-width: 800px;
+    text-align: center;
+}
+
+
+/* Form Elements */
+
+.search-form,
+.passenger-form,
+.add-passenger-form,
+.login-form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    width: 300px;
+    gap: 20px;
 }
 
-input,
-button {
-    padding: 10px;
-    font-size: 1em;
+.input-wrapper {
+    position: relative;
 }
 
-button {
+.input-field,
+select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.input-field:focus,
+select:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+
+/* Button Styling */
+
+.btn-login,
+.btn-search,
+.btn-checkout,
+.btn-add-passenger,
+.btn-buy {
+    padding: 12px;
     background-color: #007bff;
     color: white;
     border: none;
+    border-radius: 5px;
     cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
-button:hover {
+.btn-login:hover,
+.btn-search:hover,
+.btn-checkout:hover,
+.btn-add-passenger:hover,
+.btn-buy:hover {
     background-color: #0056b3;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 91, 187, 0.3);
 }
 
-.error {
+
+/* Typography */
+
+h1 {
+    color: #333;
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+h2 {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+label {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+p {
+    font-size: 14px;
+    color: #555;
+}
+
+.error-message {
     color: red;
-    font-size: 0.9em;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+
+/* Lists */
+
+.flights-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.flight-item {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: transform 0.2s;
+}
+
+.flight-item:hover {
+    transform: scale(1.02);
+}
+
+.no-flights {
+    color: #999;
+    font-style: italic;
+}
+
+
+/* Checkbox Group */
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.input-checkbox {
+    margin-right: 10px;
+}
+
+.passenger-label {
+    font-size: 14px;
+    color: #333;
+}
+
+
+/* Animation */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Responsive Adjustments */
+
+@media (max-width: 600px) {
+    .menu-container,
+    .buy-ticket-container,
+    .login-container {
+        width: 100%;
+        padding: 20px;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
 }
