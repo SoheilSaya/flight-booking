@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .auth-form {
+            max-width: 400px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .error-message {
+            color: #dc2626;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Flight Booking System</h1>
+            <div id="navLinks" class="hidden md:flex space-x-4">
+                <a href="#" class="hover:text-blue-200" onclick="showLogin()">Login</a>
+                <a href="#" class="hover:text-blue-200" onclick="showSignup()">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="loginForm" class="auth-form bg-white hidden">
+        <h2 class="text-2xl font-bold mb-4">Login</h2>
+        <form onsubmit="handleLogin(event)">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" class="w-full p-2 border rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" class="w-full p-2 border rounded" required>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+                Login
+            </button>
+            <div id="loginError" class="error-message hidden"></div>
+        </form>
+    </div>
+
+    <div id="signupForm" class="auth-form bg-white hidden">
+        <h2 class="text-2xl font-bold mb-4">Sign Up</h2>
+        <form onsubmit="handleSignup(event)">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="signupUsername">Username</label>
+                <input type="text" id="signupUsername" class="w-full p-2 border rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="signupPassword">Password</label>
+                <input type="password" id="signupPassword" class="w-full p-2 border rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="signupName">Full Name</label>
+                <input type="text" id="signupName" class="w-full p-2 border rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="signupPhone">Phone Number</label>
+                <input type="tel" id="signupPhone" class="w-full p-2 border rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="signupRole">Role</label>
+                <select id="signupRole" class="w-full p-2 border rounded" required>
+                    <option value="passenger">Passenger</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+                Sign Up
+            </button>
+            <div id="signupError" class="error-message hidden"></div>
+        </form>
+    </div>
+
+    <script>
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function showSignup() {
+            document.getElementById('signupForm').classList.remove('hidden');
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupError').classList.add('hidden');
+        }
+
+        function showError(message, type = 'signup') {
+            const errorElement = document.getElementById(`${type}Error`);
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.access_token);
+                    window.location.href = '/dashboard';
+                } else {
+                    showError(data.detail || 'Login failed', 'login');
+                }
+            } catch (error) {
+                showError('An error occurred during login', 'login');
+                console.error('Login error:', error);
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+
+            const userData = {
+                username: document.getElementById('signupUsername').value,
+                password: document.getElementById('signupPassword').value,
+                name: document.getElementById('signupName').value,
+                phone_number: document.getElementById('signupPhone').value,
+                role: document.getElementById('signupRole').value
+            };
+
+            try {
+                const response = await fetch('/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.access_token);
+                    window.location.href = '/dashboard';
+                } else {
+                    showError(data.detail || 'Signup failed');
+                }
+            } catch (error) {
+                showError('An error occurred during signup');
+                console.error('Signup error:', error);
+            }
+        }
+
+        // Show login form by default
+        showLogin();
+    </script>
+</body>
+
+</html>

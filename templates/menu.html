@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <title>Flight Booking</title>
+  </head>
+  <body>
+    <h2>Search for Flights</h2>
+    <form method="post" action="/search_flights">
+      <label for="departure">Departure Airport:</label>
+      <select name="departure" id="departure" required>
+        {% for airport in airports %}
+        <option value="{{ airport.code }}">
+          {{ airport.name }} ({{ airport.code }})
+        </option>
+        {% endfor %}
+      </select>
+
+      <label for="destination">Destination Airport:</label>
+      <select name="destination" id="destination" required>
+        {% for airport in airports %}
+        <option value="{{ airport.code }}">
+          {{ airport.name }} ({{ airport.code }})
+        </option>
+        {% endfor %}
+      </select>
+
+      <label for="flight_date">Date:</label>
+      <input type="date" name="flight_date" id="flight_date" required />
+
+      <button type="submit">Search Flights</button>
+    </form>
+
+    {% if flights is not none %}
+    <h3>Available Flights</h3>
+    {% if flights %}
+    <ul>
+      {% for flight in flights %}
+      <li>
+        Flight from {{ departure }} to {{ destination }} on {{ flight_date }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>
+      No flights available on {{ flight_date }} from {{ departure }} to {{
+      destination }}.
+    </p>
+    {% endif %} {% endif %}
+  </body>
+</html>

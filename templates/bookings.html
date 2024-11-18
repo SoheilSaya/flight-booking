@@ -1,0 +1,11 @@
+{% extends "base.html" %} {% block content %}
+<h2>Your Previous Bookings</h2>
+{% if orders %}
+<ul>
+  {% for order in orders %}
+  <li>Order Code: {{ order.code }} | Price: ${{ order.price }}</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No bookings found.</p>
+{% endif %} {% endblock %}
