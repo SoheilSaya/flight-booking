@@ -22,21 +22,25 @@
       <!-- Passenger list with checkboxes -->
       <section>
         <h2>Select Existing Passengers</h2>
-        <form method="post" action="/checkout">
+        <form method="post" action="/checkout_page">
+          <input type="hidden" name="flight_id" value="{{ flight.id }}" />
+
+          <h2>Select Passengers</h2>
           {% for passenger in passengers %}
           <div>
             <input
               type="checkbox"
               id="passenger_{{ passenger.id }}"
-              name="selected_passengers"
+              name="passenger_ids"
               value="{{ passenger.id }}"
             />
             <label for="passenger_{{ passenger.id }}">
-              {{ passenger.name }} (National ID: {{ passenger.national_id }},
-              Age: {{ passenger.age }}, Gender: {{ passenger.gender }})
+              {{ passenger.name }} (Age: {{ passenger.age }}, Gender: {{
+              passenger.gender }})
             </label>
           </div>
           {% endfor %}
+
           <button type="submit">Checkout</button>
         </form>
       </section>

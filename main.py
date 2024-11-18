@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from passlib.hash import bcrypt
 import time
-
+import random
 # FastAPI app setup
 app = FastAPI()
 
@@ -171,14 +171,51 @@ def add_passenger(
     )
 
 # Checkout route
-@app.post("/checkout", response_class=HTMLResponse)
-def checkout(
+@app.post("/checkout_page", response_class=HTMLResponse)
+def checkout_page(
     request: Request,
-    selected_passengers: list[int] = Form(...),
+    passenger_ids: list[int] = Form(...),
+    flight_id: int = Form(...),
     db: Session = Depends(get_db)
 ):
-    # Process the selected passengers and handle ticket/order creation
-    # Your checkout logic here
+    if not passenger_ids:
+        raise HTTPException(status_code=400, detail="No passengers selected")
 
-    # Redirect to the checkout page
-    return RedirectResponse(url="/checkout_page", status_code=302)
+    # Calculate the total price
+    price_per_ticket = 500
+    total_price = price_per_ticket * len(passenger_ids)
+
+    # Generate a unique order code
+    order_code = f"ORDER-{random.randint(1000, 9999)}"
+
+    try:
+        # Save the order to the database
+        new_order = Order(code=order_code, price=total_price)
+        db.add(new_order)
+        db.commit()
+        db.refresh(new_order)
+
+        # Create tickets for each passenger and save them
+        for passenger_id in passenger_ids:
+            ticket_number = f"TICKET-{random.randint(10000, 99999)}"
+            new_ticket = Ticket(
+                ticket_number=ticket_number,
+                passenger_id=passenger_id,
+                flight_id=flight_id,
+                order_id=new_order.id
+            )
+            db.add(new_ticket)
+
+        # Commit all tickets
+        db.commit()
+
+    except Exception as e:
+        # Rollback in case of any error and raise an HTTPException
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+    # Render the checkout success page
+    return templates.TemplateResponse(
+        "checkout.html",
+        {"request": request, "order_code": order_code, "total_price": total_price}
+    )
