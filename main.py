@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Form, Request, Depends, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+ 
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import create_engine, Column, String, Date, Integer, ForeignKey
@@ -9,6 +9,11 @@ from passlib.hash import bcrypt
 import time
 import random
 
+from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
+from jose import jwt, JWTError
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 # FastAPI app setup
 app = FastAPI()
 
@@ -79,6 +84,30 @@ def get_db():
 def show_login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
+
+
+# JWT Configuration
+SECRET_KEY = "your-secret-key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+app = FastAPI()
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
 @app.post("/login", response_class=HTMLResponse)
 def login(
     request: Request,
@@ -87,13 +116,28 @@ def login(
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.username == username).first()
-    if user and bcrypt.verify(password, user.password):
-        return RedirectResponse("/menu", status_code=302)
-    return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid credentials"})
+    if not user or not verify_password(password, user.password):
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid credentials"})
 
-@app.get("/signup", response_class=HTMLResponse)
-def show_signup_page(request: Request):
-    return templates.TemplateResponse("signup.html", {"request": request})
+    access_token = create_access_token(data={"sub": user.username})
+    response = RedirectResponse("/menu", status_code=302)
+    response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
+    return response
+
+@app.get("/menu", response_class=HTMLResponse)
+def menu(request: Request, token: str = Depends(get_current_user)):
+    return templates.TemplateResponse("menu.html", {"request": request})
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(status_code=401, detail="Invalid authentication credentials")
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        return username
+    except JWTError:
+        raise credentials_exception
 
 @app.post("/signup", response_class=HTMLResponse)
 def signup(
@@ -104,18 +148,13 @@ def signup(
     phone_number: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    if db.query(User).filter(User.username == username).first():
+    if db.query(Users).filter(Users.username == username).first():
         return templates.TemplateResponse("signup.html", {"request": request, "error": "User already exists"})
-    hashed_password = bcrypt.hash(password)
+    hashed_password = get_password_hash(password)
     new_user = User(username=username, password=hashed_password, name=name, phone_number=phone_number)
     db.add(new_user)
     db.commit()
     return RedirectResponse("/", status_code=302)
-
-@app.get("/menu", response_class=HTMLResponse)
-def show_menu(request: Request, db: Session = Depends(get_db)):
-    airports = db.query(Airport).all()
-    return templates.TemplateResponse("menu.html", {"request": request, "airports": airports, "flights": None})
 
 @app.post("/search_flights", response_class=HTMLResponse)
 def search_flights(
