@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.future import select
+from sqlalchemy.orm import relationship
 from sqlalchemy import Column, String, Date, Integer, ForeignKey
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -29,6 +30,7 @@ AsyncSessionLocal = sessionmaker(
 Base = declarative_base()
 
 # Models
+# User Model
 class User(Base):
     __tablename__ = "users"
     username = Column(String, primary_key=True, unique=True, index=True)
@@ -36,11 +38,15 @@ class User(Base):
     name = Column(String)
     phone_number = Column(String)
 
+# Airport Model
 class Airport(Base):
     __tablename__ = "airport"
     code = Column(String, primary_key=True, unique=True, index=True)
     name = Column(String)
 
+    # No relationships here since airports are referenced in flights.
+
+# Flight Model
 class Flight(Base):
     __tablename__ = "flight"
     id = Column(Integer, primary_key=True, index=True)
@@ -48,6 +54,14 @@ class Flight(Base):
     destination_code = Column(String, ForeignKey("airport.code"))
     flight_date = Column(Date)
 
+    # Relationships for accessing departure and destination airports
+    departure_airport = relationship("Airport", foreign_keys=[departure_code])
+    destination_airport = relationship("Airport", foreign_keys=[destination_code])
+
+    # Relationship for tickets associated with this flight
+    tickets = relationship("Ticket", back_populates="flight")
+
+# Passenger Model
 class Passenger(Base):
     __tablename__ = "passenger"
     id = Column(Integer, primary_key=True, index=True)
@@ -56,12 +70,20 @@ class Passenger(Base):
     age = Column(Integer)
     gender = Column(String)
 
+    # Relationship for tickets associated with this passenger
+    tickets = relationship("Ticket", back_populates="passenger")
+
+# Order Model
 class Order(Base):
     __tablename__ = "order"
     id = Column(Integer, primary_key=True, index=True)
     code = Column(String, unique=True)
     price = Column(Integer)
 
+    # Relationship for tickets in this order
+    tickets = relationship("Ticket", back_populates="order")
+
+# Ticket Model
 class Ticket(Base):
     __tablename__ = "ticket"
     id = Column(Integer, primary_key=True, index=True)
@@ -69,6 +91,11 @@ class Ticket(Base):
     passenger_id = Column(Integer, ForeignKey("passenger.id"))
     flight_id = Column(Integer, ForeignKey("flight.id"))
     order_id = Column(Integer, ForeignKey("order.id"))
+
+    # Relationships to access related models
+    passenger = relationship("Passenger", back_populates="tickets")
+    flight = relationship("Flight", back_populates="tickets")
+    order = relationship("Order", back_populates="tickets")
 
 # Initialize database
 @app.on_event("startup")
